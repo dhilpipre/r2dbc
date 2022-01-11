@@ -1,0 +1,28 @@
+
+// Build.gradle generated for instrumentation module oracle-r2dbc
+
+apply plugin: 'java'
+
+dependencies {
+	implementation 'com.oracle.database.r2dbc:oracle-r2dbc:0.1.0'
+
+
+   // New Relic Java Agent dependencies
+   implementation 'com.newrelic.agent.java:newrelic-agent:6.4.0'
+   implementation 'com.newrelic.agent.java:newrelic-api:6.4.0'
+   implementation fileTree(include: ['*.jar'], dir: '../libs')
+   implementation fileTree(include: ['*.jar'], dir: '../test-lib')
+}
+
+jar {
+  manifest {
+    attributes 'Implementation-Title': 'com.newrelic.instrumentation.oracle-r2dbc'
+    attributes 'Implementation-Vendor': 'New Relic'
+    attributes 'Implementation-Vendor-Id': 'com.newrelic'
+    attributes 'Implementation-Version': 1.0
+  }
+}
+
+verifyInstrumentation {
+	passes 'com.oracle.database.r2dbc:oracle-r2dbc:[0.1.0]'
+}
