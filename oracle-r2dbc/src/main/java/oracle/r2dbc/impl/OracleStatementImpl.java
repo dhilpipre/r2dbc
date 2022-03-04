@@ -38,7 +38,6 @@ abstract class OracleStatementImpl {
 		}
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Trace
 	public Publisher<? extends Result> execute() {
 		DefaultDatabaseStatementParser parser = new DefaultDatabaseStatementParser();
@@ -49,7 +48,7 @@ abstract class OracleStatementImpl {
 		Publisher<? extends Result> pub = Weaver.callOriginal();
 		if(pub instanceof Mono) {
 			Mono <? extends Result> mono = (Mono<? extends Result>)pub;
-			return mono.doOnSuccess(new NRSuccessConsumer(sql, parsed.getOperation(), parsed.getModel(), dbAttributes));
+			return mono.doOnSuccess(new NRSuccessConsumer<>(sql, parsed.getOperation(), parsed.getModel(), dbAttributes));
 		}
 		if(pub instanceof Flux) {
 			Flux<? extends Result> flux = (Flux<? extends Result>)pub;

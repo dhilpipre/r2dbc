@@ -10,7 +10,6 @@ import java.util.logging.Level;
 import com.newrelic.agent.bridge.datastore.DatabaseVendor;
 import com.newrelic.agent.database.SqlObfuscator;
 import com.newrelic.agent.service.ServiceFactory;
-import com.newrelic.api.agent.Logger;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.QueryConverter;
 
@@ -23,6 +22,12 @@ public class Utils {
 	public static final String DATABASE_NAME = "Name";
 	private static final String URL_START = "jdbc:oracle:thin:@";
 	private static final HashMap<String, Map<String, Object>> databaseCache = new HashMap<String, Map<String, Object>>();
+	
+	public static void addAttribute(Map<String, Object> attributes, String key, Object value) {
+		if(attributes != null && key != null && !key.isEmpty() && value != null) {
+			attributes.put(key, value);
+		}
+	}
 	
 	public static String getAppName() {
 		return ServiceFactory.getConfigService().getLocalAgentConfig().getApplicationName();
@@ -49,9 +54,18 @@ public class Utils {
 
 		@Override
 		public String toObfuscatedQueryString(String rawQuery) {
-			SqlObfuscator sqlObfuscator = ServiceFactory.getDatabaseService().getSqlObfuscator(appName);
+			SqlObfuscator sqlObfuscator = SqlObfuscator.getDefaultSqlObfuscator();
+			NewRelic.getAgent().getLogger().log(Level.FINE, "\tRetrieved SqlObfuscator: {0}", sqlObfuscator);
 			String dialect = databaseVendor.getType();
-			return sqlObfuscator.obfuscateSql(rawQuery, dialect);
+			NewRelic.getAgent().getLogger().log(Level.FINE, "\tUsing dialect: {0}", dialect);
+			String result = sqlObfuscator.obfuscateSql(rawQuery, dialect);
+			if(result == null) {
+				result = rawQuery.replaceAll(":P\\d*\\w*", "?");
+			} else {
+				result = result.replaceAll(":P\\d*\\w*", "?");
+			}
+			NewRelic.getAgent().getLogger().log(Level.FINE, "\tReturning: {0}", result);
+			return result;
 		}
 	}
 	
@@ -133,13 +147,13 @@ public class Utils {
 					host = url2;
 				}
 			}
-			if(host != null && !host.isBlank()) {
+			if(host != null && !host.isEmpty()) {
 				attributes.put(DATABASE_HOST, host);
 			}
 			if(port != null) {
 				attributes.put(DATABASE_PORT, port);
 			}
-			if(dbName != null && !dbName.isBlank()) {
+			if(dbName != null && !dbName.isEmpty()) {
 				attributes.put(DATABASE_NAME, dbName);
 			}
 			databaseCache.put(url, attributes);
