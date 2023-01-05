@@ -1,5 +1,4 @@
 rootProject.name = 'java-instrumentation-template'
-include 'oracle-r2dbc'
 include 'spring-r2dbc'
 include 'r2dbc-proxy'
 include 'spring-data-r2dbc-4.x'
